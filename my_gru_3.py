@@ -32,7 +32,8 @@ class GRUnet(nn.Module):
         super(GRUnet, self).__init__()
         self.hidden_dim = hidden_dim
         self.n_layers = n_layers
-        self.gru = nn.GRU(input_dim, hidden_dim, n_layers, batch_first=True, dropout=drop_prob)
+        self.gru = nn.GRU(input_dim, hidden_dim, n_layers,
+                          batch_first=True, dropout=drop_prob)
         # 将最后一个rnn的输出使用全连接得到最后的分类结果
         self.fc = nn.Linear(hidden_dim, output_dim)
         self.relu = nn.ReLU()
@@ -48,12 +49,13 @@ class GRUnet(nn.Module):
         # h[-1]表示最后一行数据值
         # fc_output = self.fc(self.relu(h[-1]))
         fc_output = self.fc(h[-1])
-        return fc_output, h 
+        return fc_output, h
 
     def init_hidden(self, batch_size):
         # weight = next(self.parameters()).data
         # hidden = weight.new(self.n_layers, batch_size, self.hidden_dim).zero_().to(device)
-        hidden = torch.zeros(self.n_layers, batch_size, self.hidden_dim).to(device)
+        hidden = torch.zeros(self.n_layers, batch_size,
+                             self.hidden_dim).to(device)
         return hidden
 
 
@@ -72,7 +74,7 @@ def accuracy(output, target, topk=(1,)):
         # 使用cross-entropy
         target = target.to(device)
         correct = pred.eq(target.view(1, -1).expand_as(pred)).to(device)
-         # 使用one-hot编码
+        # 使用one-hot编码
         # label = torch.tensor([one_label.tolist().index(1) for one_label in target]).to(device)
         # correct = pred.eq(label.view(1, -1).expand_as(pred)).to(device)
         # class_to为预测的类别
@@ -110,7 +112,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
-    top1 = AverageMeter()  
+    top1 = AverageMeter()
 
     model.train()
 
@@ -152,8 +154,8 @@ def train(train_loader, model, criterion, optimizer, epoch):
                   'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
                   'Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'.format(
-                epoch, i, len(train_loader), batch_time=batch_time,
-                data_time=data_time, loss=losses, top1=top1))
+                      epoch, i, len(train_loader), batch_time=batch_time,
+                      data_time=data_time, loss=losses, top1=top1))
     print(' * {} Prec@1 {top1.avg:.3f} '
           .format('train', top1=top1))
     return losses.avg, top1.avg
@@ -187,7 +189,6 @@ def validate(val_loader, model, criterion, epoch, phase="VAL"):
             # loss = criterion(output, target.to(device).float())
             # 使用cross entroy loss对应分类问题
             loss = criterion(output, target.to(device).long())
-            
 
             # measure accuracy and record loss
             [prec1], class_to = accuracy(output, target, topk=(1,))
@@ -204,10 +205,10 @@ def validate(val_loader, model, criterion, epoch, phase="VAL"):
                       'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                       'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
                       'Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'.format(
-                    phase, i, len(val_loader),
-                    batch_time=batch_time,
-                    loss=losses,
-                    top1=top1))
+                          phase, i, len(val_loader),
+                          batch_time=batch_time,
+                          loss=losses,
+                          top1=top1))
 
         print(' * {} Prec@1 {top1.avg:.3f} '
               .format(phase, top1=top1))
@@ -237,9 +238,12 @@ if __name__ == '__main__':
     print('总数据集大小：%d' % len(full_dataset))
     train_size = int(0.8 * len(full_dataset))
     test_size = len(full_dataset) - train_size
-    train_dataset, valid_dataset = torch.utils.data.random_split(full_dataset, [train_size, test_size], generator=torch.Generator().manual_seed(40))
-    train_loader = DataLoader(train_dataset, shuffle=False, drop_last=True, batch_size=2)
-    valid_loader = DataLoader(valid_dataset, shuffle=False, drop_last=True, batch_size=1)
+    train_dataset, valid_dataset = torch.utils.data.random_split(
+        full_dataset, [train_size, test_size], generator=torch.Generator().manual_seed(40))
+    train_loader = DataLoader(
+        train_dataset, shuffle=False, drop_last=True, batch_size=2)
+    valid_loader = DataLoader(
+        valid_dataset, shuffle=False, drop_last=True, batch_size=1)
     # Class labels
     classes = ('fanyue', 'normal')
     print('Training set has {} instances'.format(len(train_dataset)))
@@ -277,7 +281,8 @@ if __name__ == '__main__':
     # hidden_dim = 50
     # batch_size = 1
 
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    device = torch.device(
+        'cuda') if torch.cuda.is_available() else torch.device('cpu')
     print(f'device is {device}')
     # 使用GRU模型
     model = GRUnet(input_dim, hidden_dim, output_dim, n_layers)
@@ -285,7 +290,7 @@ if __name__ == '__main__':
     # if torch.cuda.device_count() > 1:
     #     print("Use", torch.cuda.device_count(), 'gpus')
     #     model = nn.DataParallel(model)
-    
+
     model.to(device)
     # model.to(device)
     # model = model.cuda()
@@ -310,9 +315,11 @@ if __name__ == '__main__':
     best_prec1 = 0
 
     for epoch in range(epochs):
-        train_loss, train_acc = train(train_loader, model, criterion, optimizer, epoch)
+        train_loss, train_acc = train(
+            train_loader, model, criterion, optimizer, epoch)
         # 在验证集上测试效果
-        valid_loss, valid_prec1 = validate(valid_loader, model, criterion, epoch, phase="VAL")
+        valid_loss, valid_prec1 = validate(
+            valid_loader, model, criterion, epoch, phase="VAL")
 
         # 将loss和accuracy数据保存
         Train_Loss_list.append(train_loss)
@@ -336,7 +343,8 @@ if __name__ == '__main__':
 
     plt.switch_backend('agg')
     epochs_plot = range(len(Test_Accuracy_list))
-    plt.plot(epochs_plot, Train_Accuracy_list, '--r', label='Training-accuracy')  # bo为画蓝色圆点，不连线
+    plt.plot(epochs_plot, Train_Accuracy_list, '--r',
+             label='Training-accuracy')  # bo为画蓝色圆点，不连线
     plt.plot(epochs_plot, Test_Accuracy_list, 'b', label='Validation acc')
     plt.title('Training and validation accuracy')
     plt.legend()  # 绘制图例，默认在右上角
@@ -350,4 +358,3 @@ if __name__ == '__main__':
     plt.savefig('./result/loss.jpg')
 
     plt.show()
-
