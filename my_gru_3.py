@@ -306,7 +306,7 @@ if __name__ == '__main__':
     Test_Loss_list = []
     Test_Accuracy_list = []
 
-    epochs = 50
+    epochs = 100
     best_prec1 = 0
 
     for epoch in range(epochs):
